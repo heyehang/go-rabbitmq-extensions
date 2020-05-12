@@ -33,7 +33,7 @@
 
 
 ```
-安装命令：go get https://github.com/heyehang/go-rabbitmq-extensions
+安装命令：go get github.com/heyehang/go-rabbitmq-extensions
 ```
     
 

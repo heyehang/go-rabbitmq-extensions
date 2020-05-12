@@ -1,7 +1,7 @@
 package publishservice
 
 import (
-	"go-rabbitmq-extensions/.example/rabbitmqoptions"
+	"github.com/heyehang/go-rabbitmq-extensions/.example/rabbitmqoptions"
 
 	"github.com/heyehang/go-rabbitmq-extensions/publish"
 )

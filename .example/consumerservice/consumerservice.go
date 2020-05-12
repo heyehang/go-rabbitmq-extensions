@@ -3,7 +3,7 @@ package consumerservice
 import (
 	"fmt"
 
-	"go-rabbitmq-extensions/.example/rabbitmqoptions"
+	"github.com/heyehang/go-rabbitmq-extensions/.example/rabbitmqoptions"
 
 	"github.com/heyehang/go-rabbitmq-extensions/connection"
 )

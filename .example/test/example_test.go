@@ -1,13 +1,14 @@
 package test
 
 import (
-	"go-rabbitmq-extensions/consumer"
 	"testing"
 	"time"
 
-	"go-rabbitmq-extensions/.example/consumerservice"
-	"go-rabbitmq-extensions/.example/publishservice"
-	"go-rabbitmq-extensions/.example/rabbitmqoptions"
+	"github.com/heyehang/go-rabbitmq-extensions/consumer"
+
+	"github.com/heyehang/go-rabbitmq-extensions/.example/consumerservice"
+	"github.com/heyehang/go-rabbitmq-extensions/.example/publishservice"
+	"github.com/heyehang/go-rabbitmq-extensions/.example/rabbitmqoptions"
 )
 
 func TestAll(t *testing.T) {

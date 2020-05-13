@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -38,12 +39,18 @@ func TestAll(t *testing.T) {
 func TestConsumerTotal(t *testing.T) {
 	rabbitmqoptions.MyRabbitmqOption.RegisterConnection()
 
-	go func() {
-		for {
-			publishservice.APublish().Publish("APublishOpt" + time.Now().String())
-
-		}
-	}()
+	// for i := 0; i < 5; i++ {
+	// 	go func() {
+	// 		for {
+	// 			dto := "APublishOpt" + time.Now().String()
+	// 			if err := publishservice.APublish().Publish(dto); err != nil {
+	// 				fmt.Sprintf("err:%#+v", err)
+	// 			} else {
+	// 				fmt.Println(dto)
+	// 			}
+	// 		}
+	// 	}()
+	// }
 	consumerService := consumer.New()
 	consumerService.RegisterConsumer(&consumerservice.AConsumeOpt{})
 	consumerService.Start()
@@ -64,6 +71,32 @@ func TestConnectionMonitor(t *testing.T) {
 }
 
 func TestChannelMonitor(t *testing.T) {
+	rabbitmqoptions.MyRabbitmqOption.RegisterConnection()
+
+	consumerService := consumer.New()
+	consumerService.RegisterConsumer(&consumerservice.CConsumeOpt{})
+	consumerService.Start()
+
+	c := make(chan bool)
+	<-c
+}
+
+func TestRestartPublish(t *testing.T) {
+	rabbitmqoptions.MyRabbitmqOption.RegisterConnection()
+
+	for {
+		dto := "APublishOpt" + time.Now().String()
+		if err := publishservice.APublish().Publish(dto); err != nil {
+			fmt.Sprintf("err:%#+v", err)
+		} else {
+			fmt.Println(dto)
+		}
+		<-time.After(1 * time.Second)
+	}
+	c := make(chan bool)
+	<-c
+}
+func TestRestartConsumer(t *testing.T) {
 	rabbitmqoptions.MyRabbitmqOption.RegisterConnection()
 
 	consumerService := consumer.New()

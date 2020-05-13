@@ -9,12 +9,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func (class *PublishOption) failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
-	}
-}
-
 type PublishOption struct {
 	ExchangeType,
 	Exchange,
@@ -23,25 +17,24 @@ type PublishOption struct {
 	ConnectionKey connection.ConnectionKey
 }
 
+func (opt *PublishOption) failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("queue:%s, %s: %s", opt.Queue, msg, err)
+	}
+}
 func (opt *PublishOption) Publish(objectmsg interface{}) error {
 	conn, err := opt.ConnectionKey.SingletonConnection()
-	if err != nil {
-		log.Fatalf("%s: %s", "Failed to open a connection", err)
-		return err
-	}
+	opt.failOnError(err, "Publish Failed to open a connection")
+
 	ch, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("%s: %s", "Failed to open a channel", err)
-		return err
-	}
+	opt.failOnError(err, "Publish Failed to open a channel")
+
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(opt.Exchange, opt.ExchangeType, true, false, false, false, nil)
 
-	if err != nil {
-		opt.failOnError(err, "Failed to Exchange Declare a channel")
-		return err
-	}
+	opt.failOnError(err, "Publish Failed to Exchange Declare a channel")
+
 	_, err = ch.QueueDeclare(
 		opt.Queue, // name
 		true,      // durable
@@ -51,19 +44,15 @@ func (opt *PublishOption) Publish(objectmsg interface{}) error {
 		nil,       // arguments
 	)
 
-	if err != nil {
-		log.Fatalf("%s: %s", "Failed to declare a queue", err)
-		return err
-	}
+	opt.failOnError(err, "Publish Failed to declare a queue")
+
 	err = ch.QueueBind(opt.Queue, opt.RoutingKey, opt.Exchange, false, nil)
-	if err != nil {
-		log.Fatalf("%s: %s", "Failed to declare a queue", err)
-		return err
-	}
+	opt.failOnError(err, "Publish Failed to Exchange QueueBind a channel")
+
 	jsonstr, err := json.Marshal(objectmsg)
 
 	if err != nil {
-		log.Fatalf("%s: %s", "Failed to publish a message", err)
+		opt.failOnError(err, "Publish Failed to json.Marshal")
 		return err
 	}
 	err = ch.Publish(
@@ -77,10 +66,7 @@ func (opt *PublishOption) Publish(objectmsg interface{}) error {
 			Body:         []byte(jsonstr),
 		})
 
-	if err != nil {
-		log.Fatalf("%s: %s", "Failed to publish a message", err)
-		return err
-	}
+	opt.failOnError(err, "Publish Failed to publish a message")
 
 	return nil
 }

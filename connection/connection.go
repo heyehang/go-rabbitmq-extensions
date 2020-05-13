@@ -3,6 +3,7 @@ package connection
 import (
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -22,7 +23,7 @@ type RabbitmqOptionBase struct {
 	mutex         sync.Mutex
 }
 
-func (opt *RabbitmqOptionBase) getConnection() (*amqp.Connection, error) {
+func (opt *RabbitmqOptionBase) getConnection() (connection *amqp.Connection, err error) {
 	if opt.connection != nil && !opt.connection.IsClosed() {
 		return opt.connection, nil
 	}
@@ -31,18 +32,24 @@ func (opt *RabbitmqOptionBase) getConnection() (*amqp.Connection, error) {
 	if opt.connection != nil && !opt.connection.IsClosed() {
 		return opt.connection, nil
 	}
-	connection, err := amqp.DialConfig("amqp://@"+opt.Host+":"+opt.Port+"/",
-		amqp.Config{
-			Vhost: opt.VHost,
-			SASL: []amqp.Authentication{
-				&amqp.PlainAuth{
-					Username: opt.UserName,
-					Password: opt.PassWord,
+	for {
+		connection, err = amqp.DialConfig("amqp://@"+opt.Host+":"+opt.Port+"/",
+			amqp.Config{
+				Vhost: opt.VHost,
+				SASL: []amqp.Authentication{
+					&amqp.PlainAuth{
+						Username: opt.UserName,
+						Password: opt.PassWord,
+					},
 				},
-			},
-		})
+			})
+		if err == nil {
+			break
+		}
+		<-time.After(1 * time.Second)
+	}
 	opt.connection = connection
-	go opt.ConnectionMonitor()
+	go opt.connectionMonitor()
 	return opt.connection, err
 }
 
@@ -60,7 +67,7 @@ func (connkey ConnectionKey) SingletonConnection() (conn *amqp.Connection, err e
 	return
 }
 
-func (opt *RabbitmqOptionBase) ConnectionMonitor() {
+func (opt *RabbitmqOptionBase) connectionMonitor() {
 	notifyClose := make(chan *amqp.Error)
 	opt.connection.NotifyClose(notifyClose)
 	select {

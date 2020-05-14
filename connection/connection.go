@@ -2,6 +2,7 @@ package connection
 
 import (
 	"errors"
+	"log"
 	"sync"
 	"time"
 
@@ -44,9 +45,11 @@ func (opt *RabbitmqOptionBase) getConnection() (connection *amqp.Connection, err
 				},
 			})
 		if err == nil {
+			log.Printf(" [*]connection successful VHost:%s", opt.VHost)
 			break
 		}
 		<-time.After(1 * time.Second)
+		log.Printf(" [*]connection VHost:%s fail,reconnection... err:%+v", opt.VHost, err)
 	}
 	opt.connection = connection
 	go opt.connectionMonitor()
@@ -72,6 +75,7 @@ func (opt *RabbitmqOptionBase) connectionMonitor() {
 	opt.connection.NotifyClose(notifyClose)
 	select {
 	case <-notifyClose:
+		log.Printf(" [*]disconnected VHost:%s,reconnected...", opt.VHost)
 		opt.getConnection()
 	}
 }

@@ -73,7 +73,7 @@ func (opt *consumerOption) Consume(consumerFunc func(msgjson string) error) {
 
 		if err != nil {
 			msg.Reject(true)
-			<-time.After(1 * time.Second)
+			time.Sleep(time.Second)
 		} else {
 			msg.Ack(false)
 		}

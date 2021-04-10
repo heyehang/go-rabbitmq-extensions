@@ -91,7 +91,7 @@ func TestRestartPublish(t *testing.T) {
 		} else {
 			fmt.Println(dto)
 		}
-		<-time.After(1 * time.Second)
+		time.Sleep(time.Second)
 	}
 	c := make(chan bool)
 	<-c

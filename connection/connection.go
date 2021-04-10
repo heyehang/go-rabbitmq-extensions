@@ -2,6 +2,7 @@ package connection
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -48,7 +49,7 @@ func (opt *RabbitmqOptionBase) getConnection() (connection *amqp.Connection, err
 			log.Printf(" [*]connection successful VHost:%s", opt.VHost)
 			break
 		}
-		<-time.After(1 * time.Second)
+		time.Sleep(time.Second)
 		log.Printf(" [*]connection VHost:%s fail,reconnection... err:%+v", opt.VHost, err)
 	}
 	opt.connection = connection
@@ -63,7 +64,7 @@ func (opt *RabbitmqOptionBase) RegisterConnection() {
 func (connkey ConnectionKey) SingletonConnection() (conn *amqp.Connection, err error) {
 	opt, ok := connectionPool[connkey]
 	if !ok {
-		err = errors.New("ConnectionPool未找到相应的Connection,请确保ConnectionKey是否匹配实现")
+		err = errors.New(fmt.Sprintf("ConnectionPool not found key:%s", connkey))
 		return
 	}
 	conn, err = opt.getConnection()
